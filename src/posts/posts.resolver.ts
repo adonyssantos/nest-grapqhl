@@ -1,9 +1,10 @@
-import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Int, Mutation, Parent, Query, ResolveField, Resolver } from '@nestjs/graphql';
 import { PostsService } from './posts.service';
 import { Post } from './post.entity';
 import { CreatePostInput } from './dto/create-post.input';
+import { Author } from 'src/authors/entities/author.entity';
 
-@Resolver()
+@Resolver((of) => Post)
 export class PostsResolver {
     constructor(
         private readonly postsService: PostsService,
@@ -17,6 +18,11 @@ export class PostsResolver {
     @Query((returns) => Post)
     post(@Args('id', { type: () => Int }) id: number) {
         return this.postsService.findOne(id);
+    }
+
+    @ResolveField((returns) => Author)
+    author(@Parent() post: Post): Promise<Author> {
+        return this.postsService.getAuthor(post.authorId);
     }
 
     @Mutation((returns) => Post)
